@@ -5,7 +5,9 @@ Overwrites the default grant, grantme and revoke chatcommands to add revoke or g
 The default commands still work for permanant grants and revokes, however you can optionally select a time period whereby the revoke/granting will be reverted.
 
 `grant <playername> <time-optional> <privstring>`
+
 `grantme <time-optional> <privstring>`
+
 `revoke <playername> <time-optional> <privstring>`
 
 `<time>` syntax:
