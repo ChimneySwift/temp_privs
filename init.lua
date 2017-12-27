@@ -36,7 +36,10 @@ local function parse_time(t) --> secs
     return secs
 end
 
-local function revoke_privs(player, privstring)
+local function revoke_privs(player, privstring, revokeall)
+    if revokeall then
+        minetest.set_player_privs(player, {})
+    end
     local revokeprivs = minetest.string_to_privs(privstring)
     local privs = minetest.get_player_privs(player)
     for priv, _ in pairs(revokeprivs) do
@@ -65,10 +68,8 @@ local function handle_privs_command(caller, name, privstring, grantorrevoke, tim
     end
 
     local privs = minetest.string_to_privs(privstring)
-    if privstring == "all" and grantorrevoke == "grant" then
+    if privstring == "all" then
         privs = minetest.registered_privileges
-    elseif privstring == "all" and grantorrevoke == "revoke" then
-        privs = {}
     end
 
     local basic_privs = minetest.string_to_privs(minetest.settings:get("basic_privs") or "interact,shout")
@@ -92,8 +93,17 @@ local function handle_privs_command(caller, name, privstring, grantorrevoke, tim
             if not basic_privs[priv] and not caller_privs.privs then
                 return false, "Your privileges are insufficient."
             end
+            for p, i in pairs(privs) do
+                if not currentprivs[p] then
+                    privs[p] = nil
+                end
+            end
         end
-        revoke_privs(name, minetest.privs_to_string(privs))
+        if privstring == "all" then
+            revoke_privs(name, minetest.privs_to_string(privs), true)
+        else
+            revoke_privs(name, minetest.privs_to_string(privs))
+        end
     end
 
     if timestr then
