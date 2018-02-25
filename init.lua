@@ -25,14 +25,15 @@ local db = load_data(db_filename) or {} -- loads file if it exists, or makes emp
 local unit_to_secs = {
     s = 1, m = 60, h = 3600,
     D = 86400, W = 604800, M = 2592000, Y = 31104000,
-    [""] = 1,
 }
 
 local function parse_time(t) --> secs
+    if not t then return false end
     local secs = 0
     for num, unit in t:gmatch("(%d+)([smhDWMY]?)") do
         secs = secs + (tonumber(num) * (unit_to_secs[unit] or 1))
     end
+    if secs == 0 then return false end
     return secs
 end
 
@@ -58,6 +59,10 @@ local function grant_privs(player, privstring)
 end
 
 local function handle_privs_command(caller, name, privstring, grantorrevoke, timestr)
+    if not parse_time(timestr) and timestr then
+        privstring = timestr .. privstring
+        timestr = nil
+    end
     local caller_privs = minetest.get_player_privs(caller)
     if not (caller_privs.privs or caller_privs.basic_privs) then
         return false, "Your privileges are insufficient."
@@ -136,7 +141,7 @@ local function handle_privs_command(caller, name, privstring, grantorrevoke, tim
 end
 
 minetest.override_chatcommand("grant", {
-    params = "<name> <time> <privilege>|all",
+    params = "<name> [time] <privilege>|all",
     func = function(name, param)
         local grantname, timestr, grantprivstr = string.match(param, "([^ ]+) ([^ ]+) (.+)")
         if not grantprivstr then
@@ -150,7 +155,7 @@ minetest.override_chatcommand("grant", {
 })
 
 minetest.override_chatcommand("grantme", {
-    params = "<time> <privilege>|all",
+    params = "[time] <privilege>|all",
     func = function(name, param)
     local timestr, grantprivstr = string.match(param, "([^ ]+) (.+)")
         if not revokeprivstr then
@@ -164,7 +169,7 @@ minetest.override_chatcommand("grantme", {
 })
 
 minetest.override_chatcommand("revoke", {
-    params = "<name> <time> <privilege>|all",
+    params = "<name> [time] <privilege>|all",
     func = function(name, param)
         local revokename, timestr, revokeprivstr = string.match(param, "([^ ]+) ([^ ]+) (.+)")
         if not revokeprivstr then
