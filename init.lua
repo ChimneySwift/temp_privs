@@ -94,7 +94,7 @@ local function handle_privs_command(caller, name, privstring, grantorrevoke, tim
         grant_privs(name, minetest.privs_to_string(privs))
     elseif grantorrevoke == "revoke" then
         local currentprivs = minetest.get_player_privs(name)
-        for priv, _ in pairs(currentprivs) do
+        for priv, _ in pairs(privs) do
             if not basic_privs[priv] and not caller_privs.privs then
                 return false, "Your privileges are insufficient."
             end
